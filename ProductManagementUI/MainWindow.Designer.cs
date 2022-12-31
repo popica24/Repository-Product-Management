@@ -150,6 +150,7 @@
             this.RatingSearchBar.Size = new System.Drawing.Size(173, 45);
             this.RatingSearchBar.TabIndex = 6;
             this.RatingSearchBar.Value = 1;
+            this.RatingSearchBar.ValueChanged += new System.EventHandler(this.RatingSearchBar_ValueChanged);
             // 
             // NameBox
             // 
@@ -227,6 +228,7 @@
             this.JSONExportBtn.TabIndex = 11;
             this.JSONExportBtn.Text = "JSON";
             this.JSONExportBtn.UseVisualStyleBackColor = true;
+            this.JSONExportBtn.Click += new System.EventHandler(this.JSONExportBtn_Click);
             // 
             // MainWindow
             // 

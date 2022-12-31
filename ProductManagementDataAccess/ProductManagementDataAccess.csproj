@@ -63,5 +63,8 @@
     <Compile Include="UserRepository.cs" />
     <Compile Include="UserSearchParameter.cs" />
   </ItemGroup>
+  <ItemGroup>
+    <Content Include="DTSheet.txt" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

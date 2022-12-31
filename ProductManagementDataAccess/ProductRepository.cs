@@ -176,6 +176,10 @@ namespace ProductManagementDataAccess
             {
                 return "SELECT * FROM tProduct as A inner join tProductCategory as B on A.ProductId = B.ProductId AND CategoryId = @ID";
             }
+            if(productSearchParameters != null && productSearchParameters.Rating.HasValue)
+            {
+                return "SELECT ProductId,AVG(Value) AS Rating INTO #RatingTable from tProductEvaluation as TEMP GROUP BY ProductId HAVING AVG(Value) = @Rating select * from tProduct as A inner join #RatingTable as B on A.ProductId = B.ProductId";
+            }
             return "SELECT TOP 100 * FROM [tProduct]";
         }
         private List<SqlParameter> CreateSqlSearchParameters(ProductSearchParameters productSearchParameters)
@@ -227,7 +231,16 @@ namespace ProductManagementDataAccess
                 P.DbType = System.Data.DbType.Int32;
                 results.Add(P);
             }
-            return results;
+            if (productSearchParameters != null && productSearchParameters.Rating.HasValue)
+            {
+                var P = new SqlParameter();
+                P.Value = productSearchParameters.Rating;
+                P.ParameterName = "@Rating";
+                P.DbType = System.Data.DbType.Int32;
+                results.Add(P);
+            }
+
+                return results;
         }
         private ProductModel MapModel(SqlDataReader Reader)
         {

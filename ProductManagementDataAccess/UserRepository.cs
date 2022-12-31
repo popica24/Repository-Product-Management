@@ -165,6 +165,10 @@ namespace ProductManagementDataAccess
         }
         private string CreateSqlStringForSearch(UserSearchParameter userSearchParameter)
         {
+            if (userSearchParameter != null && !string.IsNullOrEmpty(userSearchParameter.FirstName)&& !string.IsNullOrEmpty(userSearchParameter.LastName)&& !string.IsNullOrEmpty(userSearchParameter.Password))
+            {
+                return "SELECT * FROM [tUser] WHERE (FirstName = @FirstName AND LastName = @LastName AND Password = @Password)";
+            }
             if (userSearchParameter != null && !string.IsNullOrEmpty(userSearchParameter.PhoneNumber))
             {
                 return "SELECT * FROM [tUser] WHERE PhoneNumber = @PhoneNumber";
@@ -215,6 +219,14 @@ namespace ProductManagementDataAccess
                 var p = new SqlParameter();
                 p.ParameterName = "@LastName";
                 p.Value = userSearchParameter.LastName;
+                p.DbType = System.Data.DbType.String;
+                result.Add(p);
+            }
+            if (userSearchParameter != null && !string.IsNullOrEmpty(userSearchParameter.Password))
+            {
+                var p = new SqlParameter();
+                p.ParameterName = "@Password";
+                p.Value = userSearchParameter.Password;
                 p.DbType = System.Data.DbType.String;
                 result.Add(p);
             }

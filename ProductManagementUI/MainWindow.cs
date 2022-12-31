@@ -16,17 +16,10 @@ namespace ProductManagementUI
         public Dictionary<int, string> CategoryKeys = new Dictionary<int, string>();
         public int SelectedId;
         UserModel CurentUser;
-        public MainWindow()
+        public MainWindow(UserModel U)
         {
-            CurentUser = new UserModel()
-            {
-                UserId = 2,
-                IsAdmin = false,
-                FirstName = "Gica",
-                LastName = "Popescu",
-                PhoneNumber = "tare",
-                Password = "+40764392054"
-            };
+            CurentUser = U;
+         
             var ProductRepo = RepositoryFactory<ProductModel, ProductSearchParameters>.Create((int)RepositoryType.Product);
             var CategoryRepo = RepositoryFactory<CategoryModel, CategorySearchParameters>.Create((int)RepositoryType.Category);
            
@@ -37,7 +30,14 @@ namespace ProductManagementUI
             {
                 AdminPanel.Visible = false;
                 RatingPanel.Visible = true;
-            } 
+            }
+            if (CurentUser.UserId == 999)
+            {
+                RatingPanel.Visible = false;
+                CSVExportBtn.Visible = false;
+                JSONExportBtn.Visible = false;
+
+            }
             var source = new BindingSource(ProductRepo.GetAll(),null);
             ProductDataGridView.DataSource = source;
             foreach(var P in CategoryRepo.GetAll())
@@ -91,6 +91,7 @@ namespace ProductManagementUI
                         CategoryId = CategoryId
                     }), null);
                     ProductDataGridView.DataSource = sourceByCategory;
+                    FlexibleSearchBtn.Text = "Reset Filter";
                     break;
                 case "Search By Name":
                     var sourceByName = new BindingSource(ProductRepo.Search(new ProductSearchParameters
@@ -98,6 +99,7 @@ namespace ProductManagementUI
                         Description = NameBox.Text
                     }), null);
                     ProductDataGridView.DataSource = sourceByName;
+                    FlexibleSearchBtn.Text = "Reset Filter";
                     break;
                 case "Search By Price":
                     var sourceByPrice = new BindingSource(ProductRepo.Search(new ProductSearchParameters
@@ -106,6 +108,20 @@ namespace ProductManagementUI
                         TopPrice = Convert.ToInt32(HighValue.Value)
                     }), null) ;
                     ProductDataGridView.DataSource = sourceByPrice;
+                    FlexibleSearchBtn.Text = "Reset Filter";
+                    break;
+                case "Search By Rating":
+                    var sourceByRating = new BindingSource(ProductRepo.Search(new ProductSearchParameters()
+                    {
+                        Rating = RatingSearchBar.Value
+                    }), null);
+                    ProductDataGridView.DataSource = sourceByRating;
+                    FlexibleSearchBtn.Text = "Reset Filter";
+                    break;
+                case "Reset Filter":
+                    var defaultSource = new BindingSource(ProductRepo.GetAll(), null);
+                    ProductDataGridView.DataSource = defaultSource;
+                    FlexibleSearchBtn.Text = "";
                     break;
             }
         }
@@ -179,6 +195,15 @@ namespace ProductManagementUI
             dt.WriteToCsvFile("Export.csv");
         }
 
+        private void RatingSearchBar_ValueChanged(object sender, EventArgs e)
+        {
+            FlexibleSearchBtn.Text = "Search By Rating";
+        }
+
+        private void JSONExportBtn_Click(object sender, EventArgs e)
+        {
+
+        }
     }
     public static class DataTableExtensions
     {
