@@ -10,7 +10,11 @@ namespace ProductManagementDataAccess
 {
     internal class RatingRepository : IRepository<RatingModel, RatingSearchParameters>
     {
-        public string ConnectionString { get; private set; }
+        public string ConnectionString
+        {
+            get;
+            private set;
+        }
 
         public RatingRepository()
         {
@@ -19,8 +23,32 @@ namespace ProductManagementDataAccess
 
         public int Create(RatingModel entity)
         {
-            var sqlSelect = "INSERT INTO [tProductEvaluation] VALUES (@ProductId,@UserId,@Value)";
-            var sqlParameters = CreateSqlParametersFrom(entity);
+            var SqlString = "INSERT INTO [tProductEvaluation] VALUES (@ProductId,@UserId,@Value)";
+            var sqlParameters = CreateSqlParamsForRatingCreate(entity);
+            using (var connection = new SqlConnection(ConnectionString))
+            {
+
+                connection.Open();
+                using (var command = connection.CreateCommand())
+                {
+                    command.CommandText = SqlString;
+                    command.Parameters.AddRange(sqlParameters.ToArray());
+                    command.ExecuteNonQuery();
+                    return 1;
+                }
+
+            }
+        }
+
+        public void Delete(RatingModel entity)
+        {
+            throw new NotImplementedException();
+        }
+
+        public List<RatingModel> GetAll()
+        {
+            List<RatingModel> result = new List<RatingModel>();
+            var sqlSelect = "select FirstName, LastName , Description,Value from tUser as A inner join tProductEvaluation as B on A.UserId = B.UserId inner join tProduct as C on C.ProductId = B.ProductId";
             using (var connection = new SqlConnection(ConnectionString))
             {
 
@@ -28,15 +56,32 @@ namespace ProductManagementDataAccess
                 using (var command = connection.CreateCommand())
                 {
                     command.CommandText = sqlSelect;
-                    command.Parameters.AddRange(sqlParameters.ToArray());
-                    command.ExecuteNonQuery();
-                    return 1;
+
+                    using (var reader = command.ExecuteReader())
+                    {
+                        while (reader.Read())
+                        {
+                            var rating = MapModel(reader);
+                            result.Add(rating);
+                        }
+                    }
                 }
 
-
             }
+            return result;
         }
-        private List<SqlParameter> CreateSqlParametersFrom(RatingModel ratingModel)
+
+        public void Update(RatingModel entity)
+        {
+            throw new NotImplementedException();
+        }
+
+        public List<RatingModel> Search(RatingSearchParameters searchParameters)
+        {
+            throw new NotImplementedException();
+        }
+        #region //Helpers
+        private List<SqlParameter> CreateSqlParamsForRatingCreate(RatingModel ratingModel)
         {
             var result = new List<SqlParameter>();
 
@@ -60,38 +105,7 @@ namespace ProductManagementDataAccess
             result.Add(Value);
             return result;
         }
-        public void Delete(RatingModel entity)
-        {
-            throw new NotImplementedException();
-        }
-
-        public List<RatingModel> GetAll()
-        {
-            List<RatingModel> result = new List<RatingModel>();
-            var sqlSelect = "select FirstName, LastName , Description,Value from tUser as A inner join tProductEvaluation as B on A.UserId = B.UserId inner join tProduct as C on C.ProductId = B.ProductId";
-            using (var connection = new SqlConnection(ConnectionString))
-            {
-
-                connection.Open();
-                using (var command = connection.CreateCommand())
-                {
-                    command.CommandText = sqlSelect;
-
-                    using (var reader = command.ExecuteReader())
-                    {
-                        while (reader.Read())
-                        {
-                            var model = MapRatingFrom(reader);
-                            result.Add(model);
-                        }
-                    }
-                }
-
-
-            }
-            return result;
-        }
-        private RatingModel MapRatingFrom(SqlDataReader reader)
+        private RatingModel MapModel(SqlDataReader reader)
         {
             return new RatingModel()
             {
@@ -100,14 +114,6 @@ namespace ProductManagementDataAccess
                 Value = int.Parse(reader["Value"].ToString())
             };
         }
-        public List<RatingModel> Search(RatingSearchParameters searchParameters)
-        {
-            throw new NotImplementedException();
-        }
-
-        public void Update(RatingModel entity)
-        {
-            throw new NotImplementedException();
-        }
+        #endregion
     }
 }

@@ -6,9 +6,10 @@ using System.Threading.Tasks;
 
 namespace ProductManagementDataAccess
 {
-    public class RepositoryFactory<T,S>
+    public class RepositoryFactory<T, S>
     {
-        public static IRepository<T,S> Create(int repositoryType)
+        public static IRepository<T,
+        S> Create(int repositoryType)
         {
             switch (repositoryType)
             {
@@ -22,7 +23,6 @@ namespace ProductManagementDataAccess
                     return new ProductCategoryRepo() as IRepository<T, S>;
                 case (int)RepositoryType.Rating:
                     return new RatingRepository() as IRepository<T, S>;
-                
             }
             return null;
         }

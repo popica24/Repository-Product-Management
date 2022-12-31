@@ -10,7 +10,11 @@ namespace ProductManagementDataAccess
 {
     internal class ProductCategoryRepo : IRepository<ProductCategoryModel, ProductCategorySearchParameters>
     {
-        public string ConnectionString { get; private set; }
+        public string ConnectionString
+        {
+            get;
+            private set;
+        }
 
         public ProductCategoryRepo()
         {
@@ -19,96 +23,81 @@ namespace ProductManagementDataAccess
 
         public int Create(ProductCategoryModel entity)
         {
-            var sqlSelect = "INSERT INTO [tProductCategory] VALUES (@ProductId,@CategoryId)";
-            var sqlParameters = CreateSqlParametersFrom(entity);
+            var SqlString = "INSERT INTO [tProductCategory] VALUES (@ProductId,@CategoryId)";
+            var sqlParameters = CreateSqlParams(entity);
             using (var connection = new SqlConnection(ConnectionString))
             {
 
                 connection.Open();
                 using (var command = connection.CreateCommand())
                 {
-                    command.CommandText = sqlSelect;
+                    command.CommandText = SqlString;
                     command.Parameters.AddRange(sqlParameters.ToArray());
                     command.ExecuteNonQuery();
                     return 1;
                 }
 
-
             }
         }
-        private List<SqlParameter> CreateSqlParametersFrom(ProductCategoryModel productCategoryModel)
-        {
-            var result = new List<SqlParameter>();
-            
-            var ProductId = new SqlParameter();
-            ProductId.ParameterName = "@ProductId";
-            ProductId.Value = productCategoryModel.ProductId;
-            ProductId.DbType = System.Data.DbType.Int32;
 
-            var CategoryId = new SqlParameter();
-            CategoryId.ParameterName = "@CategoryId";
-            CategoryId.Value = productCategoryModel.CategoryId;
-            CategoryId.DbType = System.Data.DbType.Int32;
-
-            result.Add(ProductId);
-            result.Add(CategoryId);
-            return result;
-        }
         public void Delete(ProductCategoryModel entity)
         {
             var SqlDeleteString = "DELETE FROM [tProductCategory] WHERE (ProductId = @ProductId AND CategoryId = @CategoryId)";
-            var SqlParams = CreateSqlParametersFrom(entity);
-              using (var connection = new SqlConnection(ConnectionString))
-              {
-
-                  connection.Open();
-                  using (var command = connection.CreateCommand())
-                  {
-                      command.CommandText = SqlDeleteString;
-                      command.Parameters.AddRange(SqlParams.ToArray());
-                      command.ExecuteNonQuery();
-                  }
-
-
-              }
-            
-        }
-       
-        public List<ProductCategoryModel> GetAll()
-        {
-            throw new NotImplementedException();
-        }
-
-        public List<ProductCategoryModel> Search(ProductCategorySearchParameters searchParameters)
-        {
-            var result = new List<ProductCategoryModel>();
-            var sqlSelect = CreateSqlSelectFrom(searchParameters);
-            var sqlParameters = CreateSqlSearchParametersFrom(searchParameters);
+            var SqlParams = CreateSqlParams(entity);
             using (var connection = new SqlConnection(ConnectionString))
             {
 
                 connection.Open();
                 using (var command = connection.CreateCommand())
                 {
-                    command.CommandText = sqlSelect;
+                    command.CommandText = SqlDeleteString;
+                    command.Parameters.AddRange(SqlParams.ToArray());
+                    command.ExecuteNonQuery();
+                }
+
+            }
+
+        }
+
+        public List<ProductCategoryModel> GetAll()
+        {
+            throw new NotImplementedException();
+        }
+
+        public void Update(ProductCategoryModel entity)
+        {
+            throw new NotImplementedException();
+        }
+        
+        public List<ProductCategoryModel> Search(ProductCategorySearchParameters searchParameters)
+        {
+            var result = new List<ProductCategoryModel>();
+            var SqlString = CreateSqlSelectStringForPCSearch(searchParameters);
+            var sqlParameters = CreateSqlParamsForPCSearch(searchParameters);
+            using (var connection = new SqlConnection(ConnectionString))
+            {
+
+                connection.Open();
+                using (var command = connection.CreateCommand())
+                {
+                    command.CommandText = SqlString;
                     command.Parameters.AddRange(sqlParameters.ToArray());
                     using (var reader = command.ExecuteReader())
                     {
                         while (reader.Read())
                         {
-                            var user = MapModelFrom(reader);
-                            result.Add(user);
+                            var productCategory = MapModel(reader);
+                            result.Add(productCategory);
                         }
                     }
                 }
-
 
             }
 
             return result;
         }
-
-        private ProductCategoryModel MapModelFrom(SqlDataReader reader)
+        #region //Helpers
+        private ProductCategoryModel MapModel(SqlDataReader reader)
         {
             return new ProductCategoryModel()
             {
@@ -116,8 +105,7 @@ namespace ProductManagementDataAccess
                 ProductId = int.Parse(reader["ProductId"].ToString())
             };
         }
-
-        private string CreateSqlSelectFrom(ProductCategorySearchParameters productCategorySearch)
+        private string CreateSqlSelectStringForPCSearch(ProductCategorySearchParameters productCategorySearch)
         {
             if (productCategorySearch != null && productCategorySearch.ProductId.HasValue)
             {
@@ -129,11 +117,10 @@ namespace ProductManagementDataAccess
             }
             return "SELECT TOP 100 * FROM [tProductCategory]";
         }
-
-        private List<SqlParameter> CreateSqlSearchParametersFrom(ProductCategorySearchParameters productCategorySearch)
+        private List<SqlParameter> CreateSqlParamsForPCSearch(ProductCategorySearchParameters productCategorySearch)
         {
             var result = new List<SqlParameter>();
-            if(productCategorySearch != null && productCategorySearch.ProductId.HasValue)
+            if (productCategorySearch != null && productCategorySearch.ProductId.HasValue)
             {
                 var P = new SqlParameter();
                 P.ParameterName = "@ProductId";
@@ -151,9 +138,24 @@ namespace ProductManagementDataAccess
             }
             return result;
         }
-        public void Update(ProductCategoryModel entity)
+        private List<SqlParameter> CreateSqlParams(ProductCategoryModel productCategoryModel)
         {
-            throw new NotImplementedException();
+            var result = new List<SqlParameter>();
+
+            var ProductId = new SqlParameter();
+            ProductId.ParameterName = "@ProductId";
+            ProductId.Value = productCategoryModel.ProductId;
+            ProductId.DbType = System.Data.DbType.Int32;
+
+            var CategoryId = new SqlParameter();
+            CategoryId.ParameterName = "@CategoryId";
+            CategoryId.Value = productCategoryModel.CategoryId;
+            CategoryId.DbType = System.Data.DbType.Int32;
+
+            result.Add(ProductId);
+            result.Add(CategoryId);
+            return result;
         }
+        #endregion
     }
 }

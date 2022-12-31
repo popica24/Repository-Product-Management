@@ -41,8 +41,8 @@
             this.NameBox = new System.Windows.Forms.TextBox();
             this.label2 = new System.Windows.Forms.Label();
             this.RatingPanel = new System.Windows.Forms.GroupBox();
-            this.RateBtn = new System.Windows.Forms.Button();
             this.RatingBar = new System.Windows.Forms.TrackBar();
+            this.RateBtn = new System.Windows.Forms.Button();
             this.FlexibleSearchBtn = new System.Windows.Forms.Button();
             this.CSVExportBtn = new System.Windows.Forms.Button();
             this.JSONExportBtn = new System.Windows.Forms.Button();
@@ -179,16 +179,6 @@
             this.RatingPanel.TabStop = false;
             this.RatingPanel.Text = "Rating";
             // 
-            // RateBtn
-            // 
-            this.RateBtn.Location = new System.Drawing.Point(94, 49);
-            this.RateBtn.Name = "RateBtn";
-            this.RateBtn.Size = new System.Drawing.Size(85, 32);
-            this.RateBtn.TabIndex = 3;
-            this.RateBtn.Text = "Leave Rating";
-            this.RateBtn.UseVisualStyleBackColor = true;
-            this.RateBtn.Click += new System.EventHandler(this.RateBtn_Click);
-            // 
             // RatingBar
             // 
             this.RatingBar.Location = new System.Drawing.Point(6, 87);
@@ -198,6 +188,16 @@
             this.RatingBar.Size = new System.Drawing.Size(173, 45);
             this.RatingBar.TabIndex = 9;
             this.RatingBar.Value = 1;
+            // 
+            // RateBtn
+            // 
+            this.RateBtn.Location = new System.Drawing.Point(94, 49);
+            this.RateBtn.Name = "RateBtn";
+            this.RateBtn.Size = new System.Drawing.Size(85, 32);
+            this.RateBtn.TabIndex = 3;
+            this.RateBtn.Text = "Leave Rating";
+            this.RateBtn.UseVisualStyleBackColor = true;
+            this.RateBtn.Click += new System.EventHandler(this.RateBtn_Click);
             // 
             // FlexibleSearchBtn
             // 
@@ -217,6 +217,7 @@
             this.CSVExportBtn.TabIndex = 10;
             this.CSVExportBtn.Text = "CSV";
             this.CSVExportBtn.UseVisualStyleBackColor = true;
+            this.CSVExportBtn.Click += new System.EventHandler(this.CSVExportBtn_Click);
             // 
             // JSONExportBtn
             // 

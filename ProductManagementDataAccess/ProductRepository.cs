@@ -10,7 +10,11 @@ namespace ProductManagementDataAccess
 {
     internal class ProductRepository : IRepository<ProductModel, ProductSearchParameters>
     {
-        public string ConnectionString { get; private set; }
+        public string ConnectionString
+        {
+            get;
+            private set;
+        }
 
         public ProductRepository()
         {
@@ -19,17 +23,17 @@ namespace ProductManagementDataAccess
 
         public int Create(ProductModel entity)
         {
-            var sqlSelect = "INSERT INTO [tProduct] VALUES (@Description,@Price,@DateManufactured) SELECT SCOPE_IDENTITY() AS 'RETURNED'";
-            var sqlParameters = CreateSqlParametersFrom(entity);
+            var SqlString = "INSERT INTO [tProduct] VALUES (@Description,@Price,@DateManufactured) SELECT SCOPE_IDENTITY() AS 'RETURNED'";
+            var sqlParameters = CreateSqlParameters(entity);
             using (var connection = new SqlConnection(ConnectionString))
             {
 
                 connection.Open();
                 using (var command = connection.CreateCommand())
                 {
-                    command.CommandText = sqlSelect;
+                    command.CommandText = SqlString;
                     command.Parameters.AddRange(sqlParameters.ToArray());
-                    using(var reader = command.ExecuteReader())
+                    using (var reader = command.ExecuteReader())
                     {
                         reader.Read();
                         return int.Parse(reader["RETURNED"].ToString());
@@ -63,7 +67,7 @@ namespace ProductManagementDataAccess
         public List<ProductModel> GetAll()
         {
             var result = new List<ProductModel>();
-            var sqlSelect = CreateSelectProduct(null);
+            var sqlSelect = CreateSqlStringForProductSearch(null);
             using (var connection = new SqlConnection(ConnectionString))
             {
 
@@ -76,12 +80,11 @@ namespace ProductManagementDataAccess
                     {
                         while (reader.Read())
                         {
-                            var product = MapProductFrom(reader);
+                            var product = MapModel(reader);
                             result.Add(product);
                         }
                     }
                 }
-
 
             }
             return result;
@@ -90,8 +93,8 @@ namespace ProductManagementDataAccess
         public List<ProductModel> Search(ProductSearchParameters searchParameters)
         {
             var result = new List<ProductModel>();
-            var sqlSelect = CreateSelectProduct(searchParameters);
-            var sqlParameters = CreateSqlSelectParameters(searchParameters);
+            var sqlSelect = CreateSqlStringForProductSearch(searchParameters);
+            var sqlParameters = CreateSqlSearchParameters(searchParameters);
             using (var connection = new SqlConnection(ConnectionString))
             {
 
@@ -104,12 +107,11 @@ namespace ProductManagementDataAccess
                     {
                         while (reader.Read())
                         {
-                            var product = MapProductFrom(reader);
+                            var product = MapModel(reader);
                             result.Add(product);
                         }
                     }
                 }
-
 
             }
 
@@ -120,8 +122,8 @@ namespace ProductManagementDataAccess
         {
             throw new NotImplementedException();
         }
-       
-        private List<SqlParameter> CreateSqlParametersFrom(ProductModel entity)
+        #region //Helpers
+        private List<SqlParameter> CreateSqlParameters(ProductModel entity)
         {
             var result = new List<SqlParameter>();
             var Description = new SqlParameter();
@@ -152,9 +154,9 @@ namespace ProductManagementDataAccess
             return result;
 
         }
-        private string CreateSelectProduct(ProductSearchParameters productSearchParameters)
+        private string CreateSqlStringForProductSearch(ProductSearchParameters productSearchParameters)
         {
-            if(productSearchParameters != null && !string.IsNullOrEmpty(productSearchParameters.Description))
+            if (productSearchParameters != null && !string.IsNullOrEmpty(productSearchParameters.Description))
             {
                 return "SELECT * FROM [tProduct] WHERE Description = @Description";
             }
@@ -170,13 +172,13 @@ namespace ProductManagementDataAccess
             {
                 return "SELECT * FROM [tProduct] WHERE ProductId = @ProductId";
             }
-            if(productSearchParameters != null && productSearchParameters.CategoryId.HasValue)
+            if (productSearchParameters != null && productSearchParameters.CategoryId.HasValue)
             {
                 return "SELECT * FROM tProduct as A inner join tProductCategory as B on A.ProductId = B.ProductId AND CategoryId = @ID";
             }
             return "SELECT TOP 100 * FROM [tProduct]";
         }
-        private List<SqlParameter> CreateSqlSelectParameters(ProductSearchParameters productSearchParameters)
+        private List<SqlParameter> CreateSqlSearchParameters(ProductSearchParameters productSearchParameters)
         {
             var results = new List<SqlParameter>();
             if (productSearchParameters != null && !string.IsNullOrEmpty(productSearchParameters.Description))
@@ -227,7 +229,7 @@ namespace ProductManagementDataAccess
             }
             return results;
         }
-        private ProductModel MapProductFrom(SqlDataReader Reader)
+        private ProductModel MapModel(SqlDataReader Reader)
         {
             return new ProductModel()
             {
@@ -237,5 +239,6 @@ namespace ProductManagementDataAccess
                 DateManufactured = DateTime.Parse(Reader["DateManufactured"].ToString())
             };
         }
+        #endregion
     }
 }

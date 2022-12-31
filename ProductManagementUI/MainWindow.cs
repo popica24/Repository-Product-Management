@@ -146,5 +146,64 @@ namespace ProductManagementUI
             });
             RateBtn.Enabled = false;
         }
+
+        private void CSVExportBtn_Click(object sender, EventArgs e)
+        {
+            DataTable dt = new DataTable();
+            foreach(DataGridViewColumn col in ProductDataGridView.Columns)
+            {
+                dt.Columns.Add(col.Name);
+            }
+
+            foreach(DataGridViewRow row in ProductDataGridView.Rows)
+            {
+                DataRow dtRow = dt.NewRow();
+                foreach(DataGridViewCell cell in row.Cells)
+                {
+                    dtRow[cell.ColumnIndex] = cell.Value;
+                }
+                dt.Rows.Add(dtRow);
+            }
+
+            /*StringBuilder result = new StringBuilder();
+            IEnumerable<string> columnNames = dt.Columns.Cast<DataColumn>().Select(col => col.ColumnName);
+
+            result.AppendLine(String.Join("\n", columnNames));
+          
+            foreach(DataRow Row in dt.Rows)
+            {
+                IEnumerable<string> values = Row.ItemArray.Select(value => value.ToString());
+                result.AppendLine(String.Join("\n", values));
+                
+            }*/
+            dt.WriteToCsvFile("Export.csv");
+        }
+
+    }
+    public static class DataTableExtensions
+    {
+        public static void WriteToCsvFile(this DataTable dataTable, string filePath)
+        {
+            StringBuilder fileContent = new StringBuilder();
+
+            foreach (var col in dataTable.Columns)
+            {
+                fileContent.Append(col.ToString() + ",");
+            }
+
+            fileContent.Replace(",", System.Environment.NewLine, fileContent.Length - 1, 1);
+
+            foreach (DataRow dr in dataTable.Rows)
+            {
+                foreach (var column in dr.ItemArray)
+                {
+                    fileContent.Append("\"" + column.ToString() + "\",");
+                }
+
+                fileContent.Replace(",", System.Environment.NewLine, fileContent.Length - 1, 1);
+            }
+
+            System.IO.File.WriteAllText(filePath, fileContent.ToString());
+        }
     }
 }

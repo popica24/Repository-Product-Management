@@ -10,115 +10,117 @@ namespace ProductManagementDataAccess
 {
     internal class UserRepository : IRepository<UserModel, UserSearchParameter>
     {
-        public string ConnectionString { get; private set; }
+        public string ConnectionString
+        {
+            get;
+            private set;
+        }
 
         public UserRepository()
         {
             ConnectionString = ConfigurationManager.AppSettings["DbConnectionString"];
         }
-        
+
         public int Create(UserModel entity)
         {
             var sqlSelect = "INSERT INTO [tUser] VALUES (@IsAdmin,@FirstName,@LastName,@PhoneNumber,@Password) SELECT SCOPE_IDENTITY() AS 'RETURNED'";
-            var sqlParameters = CreateSqlParametersFrom(entity);
-            using(var connection = new SqlConnection(ConnectionString))
+            var sqlParameters = CreateSqlParametersForCreate(entity);
+            using (var connection = new SqlConnection(ConnectionString))
             {
-               
-                    connection.Open();
-                    using (var command = connection.CreateCommand())
-                    {
-                        command.CommandText = sqlSelect;
-                        command.Parameters.AddRange(sqlParameters.ToArray());
+
+                connection.Open();
+                using (var command = connection.CreateCommand())
+                {
+                    command.CommandText = sqlSelect;
+                    command.Parameters.AddRange(sqlParameters.ToArray());
                     using (var reader = command.ExecuteReader())
                     {
                         reader.Read();
                         return int.Parse(reader["RETURNED"].ToString());
                     }
                 }
-            
-              
-            }    
+
+            }
         }
+
         public List<UserModel> GetAll()
         {
             var result = new List<UserModel>();
-            var sqlSelect = CreateSqlSelectFrom(null);
+            var sqlSelect = CreateSqlStringForSearch(null);
             using (var connection = new SqlConnection(ConnectionString))
             {
-                
-                    connection.Open();
-                    using (var command = connection.CreateCommand())
-                    {
-                        command.CommandText = sqlSelect;
 
-                        using (var reader = command.ExecuteReader())
+                connection.Open();
+                using (var command = connection.CreateCommand())
+                {
+                    command.CommandText = sqlSelect;
+
+                    using (var reader = command.ExecuteReader())
+                    {
+                        while (reader.Read())
                         {
-                            while (reader.Read())
-                            {
-                                var user = MapUserFrom(reader);
-                                result.Add(user);
-                            }
+                            var user = MapModel(reader);
+                            result.Add(user);
                         }
                     }
-            
-              
+                }
+
             }
             return result;
         }
+
         public void Delete(UserModel entity)
         {
             var sqlSelect = "DELETE FROM [tUser] WHERE UserId = @UserId";
-            var sqlParameters = CreateSqlDeleteParametersFrom(entity);
+            var sqlParameters = CreateSqlParametersForDelete(entity);
             using (var connection = new SqlConnection(ConnectionString))
             {
-                
-                    connection.Open();
-                    using (var command = connection.CreateCommand())
-                    {
-                        command.CommandText = sqlSelect;
-                        command.Parameters.Add(sqlParameters);
-                        command.ExecuteNonQuery();
-                    }
-               
+
+                connection.Open();
+                using (var command = connection.CreateCommand())
+                {
+                    command.CommandText = sqlSelect;
+                    command.Parameters.Add(sqlParameters);
+                    command.ExecuteNonQuery();
+                }
 
             }
         }
+
         public List<UserModel> Search(UserSearchParameter searchParameters)
         {
             var result = new List<UserModel>();
-            var sqlSelect = CreateSqlSelectFrom(searchParameters);
-            var sqlParameters = CreateSqlSelectParametersFrom(searchParameters);
+            var sqlSelect = CreateSqlStringForSearch(searchParameters);
+            var sqlParameters = CreateSqlParametersForSearch(searchParameters);
             using (var connection = new SqlConnection(ConnectionString))
             {
-                
-                    connection.Open();
-                    using (var command = connection.CreateCommand())
+
+                connection.Open();
+                using (var command = connection.CreateCommand())
+                {
+                    command.CommandText = sqlSelect;
+                    command.Parameters.AddRange(sqlParameters.ToArray());
+                    using (var reader = command.ExecuteReader())
                     {
-                        command.CommandText = sqlSelect;
-                        command.Parameters.AddRange(sqlParameters.ToArray());
-                        using (var reader = command.ExecuteReader())
+                        while (reader.Read())
                         {
-                            while (reader.Read())
-                            {
-                                var user = MapUserFrom(reader);
-                                result.Add(user);
-                            }
+                            var user = MapModel(reader);
+                            result.Add(user);
                         }
                     }
-             
-             
+                }
+
             }
 
             return result;
         }
+
         public void Update(UserModel entity)
         {
-            var sqlParameters = CreateSqlParametersFrom(entity);
-           
+            throw new NotImplementedException();
         }
-
-
-        private SqlParameter CreateSqlDeleteParametersFrom(UserModel userModel)
+        #region //Helpers
+        private SqlParameter CreateSqlParametersForDelete(UserModel userModel)
         {
             var p = new SqlParameter();
             p.ParameterName = "@UserId";
@@ -126,7 +128,7 @@ namespace ProductManagementDataAccess
             p.DbType = System.Data.DbType.Int32;
             return p;
         }
-        private List<SqlParameter> CreateSqlParametersFrom(UserModel userModel)
+        private List<SqlParameter> CreateSqlParametersForCreate(UserModel userModel)
         {
             var result = new List<SqlParameter>();
             var IsAdmin = new SqlParameter();
@@ -161,18 +163,17 @@ namespace ProductManagementDataAccess
             result.Add(Password);
             return result;
         }
-
-        private string CreateSqlSelectFrom(UserSearchParameter userSearchParameter)
+        private string CreateSqlStringForSearch(UserSearchParameter userSearchParameter)
         {
-            if(userSearchParameter != null && !string.IsNullOrEmpty(userSearchParameter.PhoneNumber))
+            if (userSearchParameter != null && !string.IsNullOrEmpty(userSearchParameter.PhoneNumber))
             {
                 return "SELECT * FROM [tUser] WHERE PhoneNumber = @PhoneNumber";
             }
-            if(userSearchParameter != null && userSearchParameter.UserId.HasValue)
+            if (userSearchParameter != null && userSearchParameter.UserId.HasValue)
             {
                 return "SELECT * FROM [tUser] WHERE UserId = @UserId";
             }
-            if(userSearchParameter != null && !string.IsNullOrEmpty(userSearchParameter.FirstName))
+            if (userSearchParameter != null && !string.IsNullOrEmpty(userSearchParameter.FirstName))
             {
                 return "SELECT * FROM [tUser] WHERE FirstName = @FirstName";
             }
@@ -182,10 +183,10 @@ namespace ProductManagementDataAccess
             }
             return "SELECT TOP 100 * from [tUser]";
         }
-        private List<SqlParameter> CreateSqlSelectParametersFrom(UserSearchParameter userSearchParameter)
+        private List<SqlParameter> CreateSqlParametersForSearch(UserSearchParameter userSearchParameter)
         {
             var result = new List<SqlParameter>();
-            if(userSearchParameter!=null && !string.IsNullOrEmpty(userSearchParameter.PhoneNumber))
+            if (userSearchParameter != null && !string.IsNullOrEmpty(userSearchParameter.PhoneNumber))
             {
                 var p = new SqlParameter();
                 p.ParameterName = "@PhoneNumber";
@@ -219,8 +220,7 @@ namespace ProductManagementDataAccess
             }
             return result;
         }
-        
-        private UserModel MapUserFrom(SqlDataReader reader)
+        private UserModel MapModel(SqlDataReader reader)
         {
             if (int.Parse(reader["IsAdmin"].ToString()) == 1)
             {
@@ -245,5 +245,6 @@ namespace ProductManagementDataAccess
                 Password = reader["Password"].ToString()
             };
         }
+        #endregion
     }
 }
